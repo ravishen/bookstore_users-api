@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 
+	"github.com/ravishen/bookstore_users-api/utils/date_utils"
 	"github.com/ravishen/bookstore_users-api/utils/errors"
 )
 
@@ -38,7 +39,7 @@ func (user User) Save() *errors.RestErr {
 			FirstName:   user.FirstName,
 			LastName:    user.LastName,
 			Email:       user.Email,
-			DateCreated: user.DateCreated,
+			DateCreated: date_utils.GetNowString(),
 		}
 	}
 	return nil
