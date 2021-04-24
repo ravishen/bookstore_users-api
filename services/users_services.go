@@ -21,7 +21,7 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 	}
 	err := user.Get()
 	if err != nil {
-		errors.NewBadRequestError("user doesn't exist")
+		return nil, errors.NewBadRequestError(err.Message)
 	}
 	return user, nil
 

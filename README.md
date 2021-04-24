@@ -5,10 +5,12 @@ Book store Users API
 docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=pass -v ./db-vol:/var/lib/mysql -p 3306:3306 -d mysql:5.6
 
 ## Exporting DB details
+{
 export mysql_username="root"
 export mysql_password="pass"
 export mysql_host="127.0.0.1:3306"
-export mysql_schema="users_db"
+export mysql_schema="users_db" 
+}
 
 
 ## Creating requests

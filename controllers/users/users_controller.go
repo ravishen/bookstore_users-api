@@ -18,7 +18,7 @@ func GetUser(c *gin.Context) {
 	}
 	user, getErr := services.GetUser(userId)
 	if getErr != nil {
-		err := errors.NewBadRequestError("user not found")
+		err := errors.NewBadRequestError(getErr.Message)
 		c.JSON(err.Status, err)
 	}
 	c.JSON(http.StatusOK, user)
