@@ -16,6 +16,8 @@ const (
 	errorNoRows      = "no rows in result set"
 	queryInsertUser  = "INSERT INTO users(first_name,last_name,email,date_created) VALUES(?, ?, ?, ?);"
 	queryGetUser     = "select id,first_name,last_name,email,date_created from users where id =?;"
+	queryUpdateUser  = "update users set first_name=?,last_name=?,email=? where id = ?;"
+	queryDelete      = "delete from users where id = ?"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -79,5 +81,30 @@ func (user *User) Save() *errors.RestErr {
 	// 		DateCreated: date_utils.GetNowString(),
 	// 	}
 	// }
+	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(user.FirstName, user.LastName, user.Email, user.Id)
+	if err != nil {
+		return mysql_utils.ParseErr(err)
+	}
+	return nil
+}
+func (user *User) Delete() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryDelete)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(user.Id)
+	if err != nil {
+		return mysql_utils.ParseErr(err)
+	}
 	return nil
 }
