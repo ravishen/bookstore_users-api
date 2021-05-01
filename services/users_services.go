@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/ravishen/bookstore_users-api/domain/users"
+	"github.com/ravishen/bookstore_users-api/utils/crypto_utils"
 	"github.com/ravishen/bookstore_users-api/utils/date_utils"
 	"github.com/ravishen/bookstore_users-api/utils/errors"
 )
@@ -12,6 +13,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	}
 	user.DateCreated = date_utils.GetNowDBFormat()
 	user.Status = users.StatusActive
+	user.Passsword = crypto_utils.GetMd5(user.Passsword)
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
@@ -73,7 +75,7 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	return current, nil
 }
 
-func Search(status string) ([]users.User, *errors.RestErr) {
+func Search(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindByStatus(status)
 }
