@@ -1,6 +1,8 @@
 package users
 
 import (
+	"fmt"
+
 	"github.com/ravishen/bookstore_users-api/datasources/mysql/users_db"
 	"github.com/ravishen/bookstore_users-api/utils/date_utils"
 	"github.com/ravishen/bookstore_users-api/utils/errors"
@@ -14,10 +16,11 @@ var (
 const (
 	indexUniqueEmail = "email_unique"
 	errorNoRows      = "no rows in result set"
-	queryInsertUser  = "INSERT INTO users(first_name,last_name,email,date_created) VALUES(?, ?, ?, ?);"
+	queryInsertUser  = "INSERT INTO users(first_name,last_name,email,date_created,password,status) VALUES(?, ?, ?, ?,?,?);"
 	queryGetUser     = "select id,first_name,last_name,email,date_created from users where id =?;"
 	queryUpdateUser  = "update users set first_name=?,last_name=?,email=? where id = ?;"
 	queryDelete      = "delete from users where id = ?"
+	findUserByStatus = "select id,first_name, last_name, email, date_created, status from users where status =? ;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -54,8 +57,8 @@ func (user *User) Save() *errors.RestErr {
 		return errors.NewInternalServerError(err.Error())
 	}
 	defer stmt.Close()
-	user.DateCreated = date_utils.GetNowString()
-	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	user.DateCreated = date_utils.GetNowDBFormat()
+	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Passsword, user.Status)
 	if saveErr != nil {
 		return mysql_utils.ParseErr(saveErr)
 	}
@@ -107,4 +110,31 @@ func (user *User) Delete() *errors.RestErr {
 		return mysql_utils.ParseErr(err)
 	}
 	return nil
+}
+
+func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
+	stmt, err := users_db.Client.Prepare(findUserByStatus)
+	if err != nil {
+		return nil, mysql_utils.ParseErr(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(status)
+	if err != nil {
+		return nil, mysql_utils.ParseErr(err)
+	}
+	defer rows.Close()
+	results := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
+			return nil, mysql_utils.ParseErr(err)
+		}
+		results = append(results, user)
+	}
+
+	if len(results) == 0 {
+		return nil, errors.NewInternalServerError(fmt.Sprintf("no users matching status %s", status))
+	}
+	return results, nil
 }

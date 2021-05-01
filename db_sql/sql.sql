@@ -11,3 +11,5 @@ CREATE table `users_db`.`users`(
 
 
 select * from users_db.users;
+
+alter table `users_db`.`users` add column `status` varchar(45) not null after `email`, add column `password` varchar(45) not null after `status`;
