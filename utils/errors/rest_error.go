@@ -1,6 +1,9 @@
 package errors
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 type RestErr struct {
 	Message string `json:"message"`
@@ -33,4 +36,8 @@ func NewInternalServerError(message string) *RestErr {
 		Error:   "Internal Server Error",
 	}
 	return &restError
+}
+
+func NewError(msg string) error {
+	return errors.New(msg)
 }

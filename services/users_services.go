@@ -7,7 +7,22 @@ import (
 	"github.com/ravishen/bookstore_users-api/utils/errors"
 )
 
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+var (
+	UserService userService = userService{}
+)
+
+type userService struct {
+}
+
+type usersServiceInterface interface {
+	CreateUser(users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	GetUser(int64) (*users.User, *errors.RestErr)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+	Search(string) (users.Users, *errors.RestErr)
+}
+
+func (s *userService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -20,7 +35,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func DeleteUser(userId int64) *errors.RestErr {
+func (s *userService) DeleteUser(userId int64) *errors.RestErr {
 	user := &users.User{
 		Id: userId,
 	}
@@ -32,7 +47,7 @@ func DeleteUser(userId int64) *errors.RestErr {
 	// return nil
 }
 
-func GetUser(userId int64) (*users.User, *errors.RestErr) {
+func (s *userService) GetUser(userId int64) (*users.User, *errors.RestErr) {
 	user := &users.User{
 		Id: userId,
 	}
@@ -44,11 +59,15 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.Id)
-	if err != nil {
+func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+	current := &users.User{Id: user.Id}
+	if err := current.Get(); err != nil {
 		return nil, err
 	}
+	//	current, err := GetUser(user.Id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -75,7 +94,7 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	return current, nil
 }
 
-func Search(status string) (users.Users, *errors.RestErr) {
+func (s *userService) Search(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindByStatus(status)
 }
